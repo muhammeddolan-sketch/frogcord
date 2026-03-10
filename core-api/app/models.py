@@ -29,7 +29,7 @@ class User(Base):
 
 
 class Guild(Base):
-    """Sunucu (Discord'daki Guild/Server)"""
+    """Sunucu (Frogcord'daki Guild/Server)"""
     __tablename__ = "guilds"
 
     id = Column(Integer, primary_key=True, index=True)

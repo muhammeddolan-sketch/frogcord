@@ -12,7 +12,7 @@ from . import models, schemas, database, auth_utils
 # Tablolar yoksa oluştur
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI(title="Discord Clone Core API")
+app = FastAPI(title="Frogcord Core API")
 
 # Statik dosyalar (avatar ve guild ikonları)
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
@@ -52,7 +52,7 @@ def save_upload(file: UploadFile, folder: str) -> str:
 # ─── Sağlık ────────────────────────────────────
 @app.get("/")
 def read_root():
-    return {"message": "Discord Core API Çalışıyor! 🐸"}
+    return {"message": "Frogcord Core API Çalışıyor! 🐸"}
 
 # ─── AUTH ──────────────────────────────────────
 @app.post("/api/auth/register", response_model=schemas.UserResponse)

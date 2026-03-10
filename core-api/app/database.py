@@ -5,8 +5,8 @@ import os
 
 # İleride bir .env dosyasına alacağız ama şimdilik geliştirme için localhost
 # PostgreSQL kullandığını varsayarak örnek bir bağlantı adresi (URL) ekliyorum
-# Eğer PostgreSQL yüklü değilse basit testler için sqlite:///./discord_clone.db kullanılabilir
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./discord_clone.db")
+# Eğer PostgreSQL yüklü değilse basit testler için sqlite:///./frogcord.db kullanılabilir
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./frogcord.db")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 

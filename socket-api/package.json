@@ -1,7 +1,7 @@
 {
-  "name": "discord-clone-socket-api",
+  "name": "frogcord-socket-api",
   "version": "1.0.0",
-  "description": "Socket API for Discord Clone",
+  "description": "Socket API for Frogcord",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

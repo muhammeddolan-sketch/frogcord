@@ -339,7 +339,7 @@ function GuildModal({ onClose }) {
   );
 }
 
-// ─── Ses Durum Çubuğu (Discord Tarzı) ──────────────────────────
+// ─── Ses Durum Çubuğu (Frogcord Tarzı) ──────────────────────────
 function VoiceStatusBar({ channel, onLeave, isMuted, onToggleMute }) {
   if (!channel) return null;
   return (
