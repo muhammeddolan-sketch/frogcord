@@ -14,7 +14,9 @@ class UserResponse(BaseModel):
     email: EmailStr
     username: str
     display_name: Optional[str]
-    avatar_url: str
+    avatar_url: Optional[str] = '/logo.png'
+    banner_color: Optional[str] = '#5865f2'
+    about_me: Optional[str] = None
     is_active: bool
     created_at: datetime
     class Config:

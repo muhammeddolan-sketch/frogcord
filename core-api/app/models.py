@@ -12,6 +12,8 @@ class User(Base):
     display_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     avatar_url = Column(String, default="/logo.png")
+    banner_color = Column(String, default="#5865f2")
+    about_me = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     # İlişkiler

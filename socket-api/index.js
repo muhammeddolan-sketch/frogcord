@@ -21,6 +21,10 @@ io.on("connection", (socket) => {
     const userId = userData.userId;
     if (!onlineUsers.has(userId)) {
       onlineUsers.set(userId, { ...userData, socketIds: [] });
+    } else {
+      // Kullanıcı verilerini güncelle (isim, avatar, banner rengi vs. değişmiş olabilir)
+      const existing = onlineUsers.get(userId);
+      onlineUsers.set(userId, { ...existing, ...userData });
     }
     const userState = onlineUsers.get(userId);
     if (!userState.socketIds.includes(socket.id)) {
@@ -52,10 +56,13 @@ io.on("connection", (socket) => {
     io.emit("voice_users", Object.entries(voiceUsers).flatMap(([chId, users]) => users.map((u) => ({ ...u, channelId: parseInt(chId) }))));
   });
 
-  socket.on("voice_mute", (data) => {
+  socket.on("voice_status", (data) => {
     if (voiceUsers[data.channelId]) {
       const u = voiceUsers[data.channelId].find((u) => u.userId === data.userId);
-      if (u) u.muted = data.muted;
+      if (u) {
+        if (data.muted !== undefined) u.muted = data.muted;
+        if (data.deafened !== undefined) u.deafened = data.deafened;
+      }
     }
     io.emit("voice_users", Object.entries(voiceUsers).flatMap(([chId, users]) => users.map((u) => ({ ...u, channelId: parseInt(chId) }))));
   });

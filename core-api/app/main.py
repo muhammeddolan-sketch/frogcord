@@ -89,12 +89,18 @@ def me(current_user: models.User = Depends(auth_utils.get_current_user)):
 @app.patch("/api/users/me", response_model=schemas.UserResponse)
 def update_profile(
     display_name: str = Form(None),
+    banner_color: str = Form(None),
+    about_me: str = Form(None),
     avatar: UploadFile = File(None),
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth_utils.get_current_user)
 ):
-    if display_name:
+    if display_name is not None:
         current_user.display_name = display_name
+    if banner_color is not None:
+        current_user.banner_color = banner_color
+    if about_me is not None:
+        current_user.about_me = about_me
     if avatar and avatar.filename:
         url = save_upload(avatar, "avatars")
         current_user.avatar_url = url

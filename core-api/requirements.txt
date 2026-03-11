@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-sqlalchemy
-bcrypt
-python-multipart
-psycopg2-binary
-pytest
-httpx
-email-validator

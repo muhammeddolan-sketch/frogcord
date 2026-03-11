@@ -129,7 +129,10 @@ const useGuildStore = create((set, get) => ({
     } catch (err) { console.error(err); }
   },
 
-  addMessage: (msg) => { set((s) => ({ messages: [...s.messages, msg] })); },
+  addMessage: (msg) => { set((s) => {
+    if (s.messages.some((m) => m.id === msg.id)) return s;
+    return { messages: [...s.messages, msg] };
+  }); },
 }));
 
 export default useGuildStore;

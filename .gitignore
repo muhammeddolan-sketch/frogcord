@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+*.log
+*.png
+*.txt
+venv/
+.env
+__pycache__/
+**/__pycache__/
+*.webp
+test_*.js
+mock_users.json
+ngrok_*
+react_errors.txt
+.pytest_cache/
+.vscode/

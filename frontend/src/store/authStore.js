@@ -56,12 +56,14 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  // Profil güncelleme (form-data ile avatar + displayName)
-  updateProfile: async (displayName, avatarFile) => {
+  // Profil güncelleme (form-data ile avatar + displayName + bannerColor + aboutMe)
+  updateProfile: async (displayName, bannerColor, aboutMe, avatarFile) => {
     set({ isLoading: true });
     try {
       const formData = new FormData();
       if (displayName) formData.append('display_name', displayName);
+      if (bannerColor) formData.append('banner_color', bannerColor);
+      if (aboutMe !== undefined && aboutMe !== null) formData.append('about_me', aboutMe);
       if (avatarFile) formData.append('avatar', avatarFile);
       const res = await apiClient.patch('/api/users/me', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
