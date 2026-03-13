@@ -8,10 +8,12 @@ import os
 # Eğer PostgreSQL yüklü değilse basit testler için sqlite:///./discord_clone.db kullanılabilir
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./discord_clone.db")
 
+# SQLAlchemy 1.4+ da postgres:// yerine postgresql:// kullanılması gerekir
+if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    # SQLite kullanıyorsak aynı thread içinde çalışması için bu ayar gerekli
-    connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
+    SQLALCHEMY_DATABASE_URL
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

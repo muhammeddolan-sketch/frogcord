@@ -6,11 +6,15 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 # Removed passlib import
 import uuid, os, shutil
+from dotenv import load_dotenv
 
 from . import models, schemas, database, auth_utils
+from .database import engine, Base
 
-# Tablolar yoksa oluştur
-models.Base.metadata.create_all(bind=database.engine)
+load_dotenv()
+
+# Veritabanı tablolarını oluştur
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Frogcord Core API")
 

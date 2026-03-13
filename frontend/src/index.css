@@ -56,3 +56,44 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+
+/* Discord Scrollbar Style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #1a1b1e;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #242529;
+}
+
+@keyframes speaking-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(35, 165, 89, 0.7); }
+  70% { box-shadow: 0 0 0 4px rgba(35, 165, 89, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(35, 165, 89, 0); }
+}
+
+.speaking-pulse {
+  animation: speaking-pulse 1.5s infinite;
+  border: 2px solid #23a559 !important;
+}
+
+.mirror {
+  transform: rotateY(180deg);
+}
+
+video {
+  border-radius: 8px;
+  background: #000;
+}
