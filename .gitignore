@@ -2,7 +2,6 @@ node_modules/
 dist/
 build/
 *.log
-*.png
 *.txt
 venv/
 .env
@@ -15,3 +14,4 @@ ngrok_*
 react_errors.txt
 .pytest_cache/
 .vscode/
+core-api/uploads/
