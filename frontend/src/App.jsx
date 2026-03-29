@@ -3,6 +3,7 @@ import useAuthStore from './store/authStore';
 import MainApp from './pages/MainApp';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import { VoiceProvider } from './context/VoiceContext';
 
 // Token varsa /app'e, yoksa /login'e yönlendiren koruma bileşeni
 function ProtectedRoute({ children }) {
@@ -23,7 +24,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
-        <Route path="/app" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
+        <Route path="/app" element={<ProtectedRoute><VoiceProvider><MainApp /></VoiceProvider></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

@@ -29,7 +29,8 @@ const useAuthStore = create((set) => ({
       set({ isLoading: false });
       return { success: true, data: res.data };
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Kayıt başarısız oldu.';
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail[0].msg : 'Kayıt başarısız oldu.');
       set({ isLoading: false, error: msg });
       return { success: false, error: msg };
     }
@@ -50,20 +51,22 @@ const useAuthStore = create((set) => ({
       set({ token, user: meRes.data, isLoading: false });
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Giriş başarısız oldu.';
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail[0].msg : 'Giriş başarısız oldu.');
       set({ isLoading: false, error: msg });
       return { success: false, error: msg };
     }
   },
 
-  // Profil güncelleme (form-data ile avatar + displayName + bannerColor + aboutMe)
-  updateProfile: async (displayName, bannerColor, aboutMe, avatarFile) => {
+  // Profil güncelleme (form-data ile avatar + displayName + bannerColor + aboutMe + customStatus)
+  updateProfile: async (displayName, bannerColor, aboutMe, customStatus, avatarFile) => {
     set({ isLoading: true });
     try {
       const formData = new FormData();
       if (displayName) formData.append('display_name', displayName);
       if (bannerColor) formData.append('banner_color', bannerColor);
       if (aboutMe !== undefined && aboutMe !== null) formData.append('about_me', aboutMe);
+      if (customStatus !== undefined && customStatus !== null) formData.append('custom_status', customStatus);
       if (avatarFile) formData.append('avatar', avatarFile);
       const res = await apiClient.patch('/api/users/me', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -71,8 +74,32 @@ const useAuthStore = create((set) => ({
       set({ user: res.data, isLoading: false });
       return { success: true };
     } catch (err) {
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail[0].msg : 'Güncelleme başarısız.');
       set({ isLoading: false });
-      return { success: false, error: err.response?.data?.detail || 'Güncelleme başarısız.' };
+      return { success: false, error: msg };
+    }
+  },
+  
+  verifyRequest: async (email) => {
+    try {
+      await apiClient.post('/api/auth/verify-request', { email });
+      return { success: true };
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail[0].msg : 'İstek başarısız.');
+      return { success: false, error: msg };
+    }
+  },
+
+  verifyConfirm: async (email, code) => {
+    try {
+      await apiClient.post('/api/auth/verify-confirm', { email, code });
+      return { success: true };
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail[0].msg : 'Doğrulama başarısız.');
+      return { success: false, error: msg };
     }
   },
 

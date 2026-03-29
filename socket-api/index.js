@@ -43,6 +43,7 @@ io.on("connection", (socket) => {
 
   // Sesli kanala katıl
   socket.on("voice_join", (data) => {
+    socket.join(`voice_${data.channelId}`);
     if (!voiceUsers[data.channelId]) voiceUsers[data.channelId] = [];
     voiceUsers[data.channelId] = voiceUsers[data.channelId].filter((u) => u.userId !== data.userId);
     voiceUsers[data.channelId].push({ ...data, socketId: socket.id, muted: false });
@@ -50,6 +51,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("voice_leave", (data) => {
+    socket.leave(`voice_${data.channelId}`);
     if (voiceUsers[data.channelId]) {
       voiceUsers[data.channelId] = voiceUsers[data.channelId].filter((u) => u.userId !== data.userId);
     }
@@ -67,9 +69,61 @@ io.on("connection", (socket) => {
     io.emit("voice_users", Object.entries(voiceUsers).flatMap(([chId, users]) => users.map((u) => ({ ...u, channelId: parseInt(chId) }))));
   });
 
+  // ─── SES MODERASYONU (Discord tarzı) ───────────────────────
+  // Sunucu tarafından susturma
+  socket.on("voice_server_mute", ({ targetUserId, channelId, muted, byUserId }) => {
+    if (voiceUsers[channelId]) {
+      const u = voiceUsers[channelId].find((u) => u.userId === targetUserId);
+      if (u) {
+        u.serverMuted = muted;
+        if (muted) u.muted = true;
+      }
+    }
+    io.emit("voice_users", Object.entries(voiceUsers).flatMap(([chId, users]) => users.map((u) => ({ ...u, channelId: parseInt(chId) }))));
+    // Hedef kullanıcıya bildir ki kendi tarafında da uygulasın
+    const targetState = onlineUsers.get(targetUserId);
+    if (targetState) {
+      targetState.socketIds.forEach(id => {
+        io.to(id).emit("voice_server_action", { action: "mute", muted, byUserId, channelId });
+      });
+    }
+  });
+
+  // Sunucu tarafından sağırlaştırma
+  socket.on("voice_server_deafen", ({ targetUserId, channelId, deafened, byUserId }) => {
+    if (voiceUsers[channelId]) {
+      const u = voiceUsers[channelId].find((u) => u.userId === targetUserId);
+      if (u) {
+        u.serverDeafened = deafened;
+        if (deafened) { u.deafened = true; u.muted = true; u.serverMuted = true; }
+      }
+    }
+    io.emit("voice_users", Object.entries(voiceUsers).flatMap(([chId, users]) => users.map((u) => ({ ...u, channelId: parseInt(chId) }))));
+    const targetState = onlineUsers.get(targetUserId);
+    if (targetState) {
+      targetState.socketIds.forEach(id => {
+        io.to(id).emit("voice_server_action", { action: "deafen", deafened, byUserId, channelId });
+      });
+    }
+  });
+
+  // Ses kanalından atma (disconnect)
+  socket.on("voice_disconnect_user", ({ targetUserId, channelId, byUserId }) => {
+    if (voiceUsers[channelId]) {
+      voiceUsers[channelId] = voiceUsers[channelId].filter((u) => u.userId !== targetUserId);
+    }
+    io.emit("voice_users", Object.entries(voiceUsers).flatMap(([chId, users]) => users.map((u) => ({ ...u, channelId: parseInt(chId) }))));
+    const targetState = onlineUsers.get(targetUserId);
+    if (targetState) {
+      targetState.socketIds.forEach(id => {
+        io.to(id).emit("voice_server_action", { action: "disconnect", byUserId, channelId });
+      });
+    }
+  });
+
   // Konuşma tespiti (Web Audio API tarafından tetiklenir)
   socket.on("voice_speaking", ({ channelId, userId, speaking }) => {
-    socket.to(`channel_${channelId}`).emit("user_speaking", { userId, speaking });
+    socket.to(`voice_${channelId}`).emit("user_speaking", { userId, speaking });
   });
 
   socket.on("send_message", (data) => {
