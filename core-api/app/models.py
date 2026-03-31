@@ -38,12 +38,20 @@ class Guild(Base):
     icon_url = Column(String, default="/logo.png")
     invite_code = Column(String, unique=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    region = Column(String, default="derin-gol")
+    system_channel_id = Column(Integer, ForeignKey("channels.id"), nullable=True)
+    afk_channel_id = Column(Integer, ForeignKey("channels.id"), nullable=True)
+    afk_timeout = Column(Integer, default=300)
+    verification_level = Column(Integer, default=0) # 0: None, 1: Email, 2: 10min wait
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # İlişkiler
     owner = relationship("User", back_populates="owned_guilds", foreign_keys=[owner_id])
-    channels = relationship("Channel", back_populates="guild", cascade="all, delete-orphan")
+    channels = relationship("Channel", back_populates="guild", cascade="all, delete-orphan", foreign_keys="Channel.guild_id")
     members = relationship("GuildMember", back_populates="guild", cascade="all, delete-orphan")
+    
+    system_channel = relationship("Channel", foreign_keys=[system_channel_id])
+    afk_channel = relationship("Channel", foreign_keys=[afk_channel_id])
 
 
 class GuildMember(Base):
@@ -101,7 +109,7 @@ class Channel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # İlişkiler
-    guild = relationship("Guild", back_populates="channels")
+    guild = relationship("Guild", back_populates="channels", foreign_keys=[guild_id])
     messages = relationship("Message", back_populates="channel", cascade="all, delete-orphan")
     participants = relationship("User", secondary="channel_participants", back_populates="channels")
 

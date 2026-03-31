@@ -86,7 +86,8 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         email=user.email, username=user.username,
         tag=tag,
         display_name=user.display_name or user.username,
-        hashed_password=get_password_hash(user.password)
+        hashed_password=get_password_hash(user.password),
+        is_verified=True  # E-posta doğrulamasını devredışı bırakıyoruz
     )
     db.add(new_user); db.commit(); db.refresh(new_user)
     return new_user
@@ -243,14 +244,21 @@ def create_guild(
         icon_url = save_upload(icon, "guilds")
 
     guild = models.Guild(name=name, description=description, owner_id=current_user.id,
-                         invite_code=invite_code, icon_url=icon_url)
+                         invite_code=invite_code, icon_url=icon_url, region="derin-gol", verification_level=0)
     db.add(guild); db.flush()
     
     # Varsayılan @everyone rolü oluştur
-    everyone_role = models.Role(name="@everyone", guild_id=guild.id, position=0, permissions=1600) # 1024 (history) + 512 (send) + 64 (nick)
+    everyone_role = models.Role(name="@everyone", guild_id=guild.id, position=0, permissions=1600)
     db.add(everyone_role)
     
-    db.add(models.Channel(name="genel", channel_type="text", guild_id=guild.id))
+    # Kanalları oluştur
+    genel_text = models.Channel(name="genel", channel_type="text", guild_id=guild.id)
+    genel_voice = models.Channel(name="Genel Ses", channel_type="voice", guild_id=guild.id)
+    db.add(genel_text); db.add(genel_voice); db.flush()
+    
+    # Varsayılan sistem kanalı olarak metin kanalını ata
+    guild.system_channel_id = genel_text.id
+    
     db.add(models.GuildMember(guild_id=guild.id, user_id=current_user.id, role="owner"))
     db.commit(); db.refresh(guild)
     return guild
@@ -280,6 +288,11 @@ def update_guild(
     guild_id: int,
     name: str = Form(None),
     description: str = Form(None),
+    region: str = Form(None),
+    system_channel_id: int = Form(None),
+    afk_channel_id: int = Form(None),
+    afk_timeout: int = Form(None),
+    verification_level: int = Form(None),
     icon: UploadFile = File(None),
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth_utils.get_current_user)
@@ -289,6 +302,11 @@ def update_guild(
         raise HTTPException(403, "Yalnızca sunucu sahibi düzenleyebilir.")
     if name: guild.name = name
     if description is not None: guild.description = description
+    if region: guild.region = region
+    if system_channel_id is not None: guild.system_channel_id = system_channel_id
+    if afk_channel_id is not None: guild.afk_channel_id = afk_channel_id
+    if afk_timeout is not None: guild.afk_timeout = afk_timeout
+    if verification_level is not None: guild.verification_level = verification_level
     if icon and icon.filename:
         guild.icon_url = save_upload(icon, "guilds")
     db.commit(); db.refresh(guild)
@@ -306,6 +324,16 @@ def join_guild(invite_code: str, db: Session = Depends(database.get_db),
     ).first():
         raise HTTPException(400, "Zaten bu sunucunun üyesisiniz.")
     db.add(models.GuildMember(guild_id=guild.id, user_id=current_user.id, role="member"))
+    
+    # Otomatik Hoş Geldin Mesajı
+    if guild.system_channel_id:
+        welcome_msg = models.Message(
+            content=f"🐸 Vık vık! **{current_user.display_name or current_user.username}** göle atladı! Hoş geldin!",
+            channel_id=guild.system_channel_id,
+            author_id=1 # Sistem/Bot kullanıcısı (id=1 varsayımı ile)
+        )
+        db.add(welcome_msg)
+        
     db.commit(); db.refresh(guild)
     return guild
 
@@ -518,6 +546,27 @@ def get_messages(channel_id: int, limit: int = 50,
 def send_message(channel_id: int, msg: schemas.MessageCreate,
                  db: Session = Depends(database.get_db),
                  current_user: models.User = Depends(auth_utils.get_current_user)):
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    if not channel: raise HTTPException(404, "Kanal bulunamadı.")
+    
+    if channel.guild_id:
+        guild = channel.guild
+        # Güvenlik Seviyesi 1: E-posta Doğrulaması
+        if guild.verification_level >= 1 and not current_user.is_verified:
+            raise HTTPException(403, "Mesaj göndermek için e-posta doğrulaması şart!")
+            
+        # Güvenlik Seviyesi 2: 10 Dakika Bekleme
+        if guild.verification_level >= 2:
+            member = db.query(models.GuildMember).filter(
+                models.GuildMember.guild_id == channel.guild_id,
+                models.GuildMember.user_id == current_user.id
+            ).first()
+            if member:
+                from datetime import datetime, timezone
+                delta = (datetime.now(timezone.utc) - member.joined_at.replace(tzinfo=timezone.utc)).total_seconds()
+                if delta < 600:
+                    raise HTTPException(403, "Gölün sakinleşmesi için 10 dakikadır burada vıklıyor olmalısın.")
+
     message = models.Message(content=msg.content, channel_id=channel_id, author_id=current_user.id, reply_to_id=msg.reply_to_id)
     db.add(message); db.commit(); db.refresh(message)
     return _build_message_response(message, current_user.id, db)

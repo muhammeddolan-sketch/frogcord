@@ -24,10 +24,7 @@ export default function Register() {
     e.preventDefault();
     const result = await register(email, username, displayName, password);
     if (result.success) {
-      const vResult = await verifyRequest(email);
-      if (vResult.success) {
-        setStep('verify');
-      }
+      navigate('/login');
     }
   };
 

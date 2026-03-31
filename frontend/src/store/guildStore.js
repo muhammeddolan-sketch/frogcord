@@ -57,12 +57,18 @@ const useGuildStore = create((set, get) => ({
     }
   },
 
-  updateGuild: async (guildId, name, description, iconFile) => {
+  updateGuild: async (guildId, name, description, iconFile, region, systemChannelId, afkChannelId, afkTimeout, verificationLevel) => {
     try {
       const formData = new FormData();
       if (name) formData.append('name', name);
       if (description !== undefined) formData.append('description', description);
       if (iconFile) formData.append('icon', iconFile);
+      if (region) formData.append('region', region);
+      if (systemChannelId !== undefined) formData.append('system_channel_id', systemChannelId || '');
+      if (afkChannelId !== undefined) formData.append('afk_channel_id', afkChannelId || '');
+      if (afkTimeout !== undefined) formData.append('afk_timeout', afkTimeout);
+      if (verificationLevel !== undefined) formData.append('verification_level', verificationLevel);
+      
       const res = await apiClient.patch(`/api/guilds/${guildId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });

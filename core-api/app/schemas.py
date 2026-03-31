@@ -102,6 +102,11 @@ class GuildResponse(BaseModel):
     icon_url: str
     invite_code: str
     owner_id: int
+    region: str
+    system_channel_id: Optional[int]
+    afk_channel_id: Optional[int]
+    afk_timeout: int
+    verification_level: int
     created_at: datetime
     channels: List[ChannelResponse] = []
     members: List[GuildMemberResponse] = []

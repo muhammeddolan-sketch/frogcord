@@ -1,0 +1,54 @@
+
+
+services:
+  # Backend: Python/FastAPI (Core Logic & Files)
+  core-api:
+    build: ./core-api
+    container_name: frogcord-core-api
+    volumes:
+      - ./core-api/uploads:/app/uploads
+      - ./core-api/frogcord.db:/app/frogcord.db
+    environment:
+      - DATABASE_URL=sqlite:///./frogcord.db
+    restart: unless-stopped
+
+  # Socket API: Node.js/Socket.IO (Real-time Messaging & Presence)
+  socket-api:
+    build: ./socket-api
+    container_name: frogcord-socket-api
+    restart: unless-stopped
+
+  # Primary Gateway: Express Proxy & Static Frontend
+  # This is the single entry point for all users (Port 9000).
+  gateway:
+    build: .
+    container_name: frogcord-gateway
+    ports:
+      - "9000:9000"
+    environment:
+      - CORE_API_URL=http://core-api:8000
+      - SOCKET_API_URL=http://socket-api:3001
+      - PORT=9000
+    depends_on:
+      - core-api
+      - socket-api
+    restart: always
+
+  # Optional: Ngrok Service to expose Port 9000 to the internet automatically
+  # Ngrok: Sunucuyu dış dünyaya açmak için (İsteğe bağlı)
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    command:
+      - "http"
+      - "gateway:9000"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - gateway
+
+networks:
+  default:
+    name: frogcord-network

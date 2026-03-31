@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Signal, Mic, MicOff, Headphones, Phone, Settings, MessageSquare, Hash, Plus, Users, Paperclip, Gamepad, Home, User, Volume1, Volume2, X, Trash2, LogOut, Link, Frown, Check, CheckSquare, Clipboard, Zap, ArrowLeft, Video, Monitor, ChevronDown, Search, MessageCircle, Code } from 'lucide-react';
+import { Signal, Mic, MicOff, Headphones, Phone, Settings, MessageSquare, Hash, Plus, Users, Paperclip, Gamepad, Home, User, Volume1, Volume2, X, Trash2, LogOut, Link, Frown, Check, CheckSquare, Clipboard, Zap, ArrowLeft, Video, Monitor, ChevronDown, Search, MessageCircle, Code, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useGuildStore from '../../store/guildStore';
 import { useFriendStore } from '../../store/friendStore';
@@ -7,12 +7,12 @@ import useTaskStore from '../../store/taskStore';
 import apiClient from '../../api/axiosClient';
 import { socket } from '../../socket';
 import UserAvatar from '../UserAvatar';
-import { resolveUrl, formatTimeStr, renderInlineMarkdown } from '../../utils';
+import { resolveUrl, formatTimeStr, renderInlineMarkdown } from '../../utils.js';
 import { VoiceUserCard, VoiceStatusBar, LocalVideoView, RemoteVideoView } from '../VoiceController';
 import { useVoice } from '../../context/VoiceContext';
 
 export default // ─── Sunucu Sidebar (Soldaki Dikey Çubuk) ──────────────────────
-function ServerSidebar({ guilds, activeGuild, onGuildSelect, onShowModal, onHomeClick }) {
+function ServerSidebar({ guilds, activeGuild, onGuildSelect, onShowModal, onShowUltra, onHomeClick }) {
   return (
     <div className="w-[72px] bg-[var(--bg-darker)] flex flex-col items-center py-3 gap-2 flex-shrink-0 z-50 overflow-hidden">
       {/* Home / DM Button */}
@@ -51,6 +51,16 @@ function ServerSidebar({ guilds, activeGuild, onGuildSelect, onShowModal, onHome
           <Plus className="w-6 h-6" />
         </button>
       </div>
+
+      {/* Support / Ultra Button */}
+      <div className="w-8 h-[2px] bg-white/10 mx-auto my-1" />
+      <button 
+        onClick={onShowUltra}
+        title="Özgürlüğü Destekle"
+        className="group relative flex items-center justify-center w-12 h-12 rounded-[24px] bg-[var(--bg-mid)] text-[var(--accent-primary)] hover:rounded-[16px] hover:bg-[var(--accent-primary)] hover:text-white transition-all duration-300 flex-shrink-0 shadow-glow hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+        <ShieldCheck className="w-6 h-6" />
+        <div className="absolute left-[-15px] w-2 h-5 bg-[var(--accent-primary)] rounded-r-lg transition-all scale-y-0 origin-left group-hover:scale-y-100" />
+      </button>
     </div>
   );
 }

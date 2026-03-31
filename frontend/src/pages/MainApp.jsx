@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Signal, Mic, MicOff, Headphones, Phone, Settings, MessageSquare, Hash, 
-  Plus, Users, Paperclip, Gamepad, Home, User, Volume1, Volume2, X, Trash2, 
-  LogOut, Link, Frown, Check, Square, Monitor, Video, Search, ChevronDown, 
+import {
+  Signal, Mic, MicOff, Headphones, Phone, Settings, MessageSquare, Hash,
+  Plus, Users, Paperclip, Gamepad, Home, User, Volume1, Volume2, X, Trash2,
+  LogOut, Link, Frown, Check, Square, Monitor, Video, Search, ChevronDown,
   MessageCircle, Code, Zap
 } from 'lucide-react';
 
@@ -38,18 +38,18 @@ import FriendsView from '../components/FriendsView';
 
 export default function MainApp() {
   const { user, logout } = useAuthStore();
-  const { 
-    guilds, activeGuild, activeChannel, messages, 
-    fetchGuilds, selectGuild, selectChannel, addMessage, removeMessage 
+  const {
+    guilds, activeGuild, activeChannel, messages,
+    fetchGuilds, selectGuild, selectChannel, addMessage, removeMessage
   } = useGuildStore();
-  const { 
-    friends, fetchFriends, addPendingRequest, updateRequestToAccepted, 
-    acceptFriendRequest, rejectFriendRequest, sendFriendRequest 
+  const {
+    friends, fetchFriends, addPendingRequest, updateRequestToAccepted,
+    acceptFriendRequest, rejectFriendRequest, sendFriendRequest
   } = useFriendStore();
-  
+
   const {
     currentVoiceChannel, voiceUsers, isMuted, isDeafened, isVideoOn, isScreenOn,
-    speaking, othersSpeak, remoteStreams, joinVoice, leaveVoice, 
+    speaking, othersSpeak, remoteStreams, joinVoice, leaveVoice,
     toggleMute, toggleDeafen, toggleCamera, toggleScreen,
     voiceUsersGlobal, globalOthersSpeak,
     soundVolume, setSoundVolume
@@ -62,14 +62,15 @@ export default function MainApp() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showGuildSettings, setShowGuildSettings] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showUltraModal, setShowUltraModal] = useState(false);
   const [popoutUser, setPopoutUser] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  
+
   // Settings States
   const [profileEffect, setProfileEffect] = useState(() => localStorage.getItem('profileEffect') || 'none');
-  
-  const [channelsWidth, setChannelsWidth] = useState(() => 
+
+  const [channelsWidth, setChannelsWidth] = useState(() =>
     parseInt(localStorage.getItem('leftPanelWidth') || '288', 10)
   );
 
@@ -89,7 +90,7 @@ export default function MainApp() {
     socket.on('online_users', setOnlineUsers);
     socket.on('friend_request_received', addPendingRequest);
     socket.on('friend_request_accepted_notify', updateRequestToAccepted);
-    
+
     return () => {
       socket.off('online_users');
       socket.off('friend_request_received');
@@ -100,10 +101,10 @@ export default function MainApp() {
   // Connection handling
   useEffect(() => {
     if (user?.id) {
-      socket.emit('user_connected', { 
-        userId: user.id, 
-        username: user.username, 
-        displayName: user.display_name, 
+      socket.emit('user_connected', {
+        userId: user.id,
+        username: user.username,
+        displayName: user.display_name,
         avatarUrl: user.avatar_url,
         banner_color: user.banner_color,
         about_me: user.about_me
@@ -115,29 +116,29 @@ export default function MainApp() {
   useEffect(() => {
     if (!activeChannel) return;
     socket.emit('join_channel', activeChannel.id);
-    
-    const onMsg = (data) => { 
+
+    const onMsg = (data) => {
       if (data.channel_id === activeChannel.id) {
-        addMessage(data); 
+        addMessage(data);
       }
     };
-    
+
     const onTyping = ({ username }) => setTypingUsers((p) => p.includes(username) ? p : [...p, username]);
     const onStopTyping = ({ username }) => setTypingUsers((p) => p.filter((u) => u !== username));
-    
+
     socket.on('receive_message', onMsg);
     socket.on('user_typing', onTyping);
     socket.on('user_stopped_typing', onStopTyping);
-    
-    return () => { 
-      socket.off('receive_message', onMsg); 
-      socket.off('user_typing', onTyping); 
-      socket.off('user_stopped_typing', onStopTyping); 
+
+    return () => {
+      socket.off('receive_message', onMsg);
+      socket.off('user_typing', onTyping);
+      socket.off('user_stopped_typing', onStopTyping);
     };
   }, [activeChannel]);
 
-  useEffect(() => { 
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   // Event Handlers
@@ -154,9 +155,9 @@ export default function MainApp() {
     if (!activeChannel) return;
     socket.emit('typing_start', { channelId: activeChannel.id, username: user?.display_name || user?.username });
     clearTimeout(typingTimerRef.current);
-    typingTimerRef.current = setTimeout(() => 
-      socket.emit('typing_stop', { channelId: activeChannel.id, username: user?.display_name || user?.username }), 
-    1500);
+    typingTimerRef.current = setTimeout(() =>
+      socket.emit('typing_stop', { channelId: activeChannel.id, username: user?.display_name || user?.username }),
+      1500);
   };
 
   const handleSendMessage = async (e) => {
@@ -179,8 +180,8 @@ export default function MainApp() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await apiClient.post(`/api/channels/${activeChannel.id}/upload`, formData, { 
-        headers: { 'Content-Type': 'multipart/form-data' } 
+      const res = await apiClient.post(`/api/channels/${activeChannel.id}/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       const msgData = { ...res.data, channel_id: activeChannel.id };
       addMessage(msgData);
@@ -210,9 +211,9 @@ export default function MainApp() {
     <div className="flex h-screen w-screen bg-[var(--bg-dark)] text-[var(--text-primary)] font-sans overflow-hidden">
       {/* Modallars */}
       {showModal && <GuildModal onClose={() => setShowModal(false)} />}
-       {showProfileModal && (
-        <UserSettingsModal 
-          user={user} 
+      {showProfileModal && (
+        <UserSettingsModal
+          user={user}
           onClose={() => setShowProfileModal(false)}
           soundVolume={soundVolume}
           setSoundVolume={setSoundVolume}
@@ -221,72 +222,73 @@ export default function MainApp() {
         />
       )}
       {showGuildSettings && activeGuild && (
-        <GuildSettingsModal 
-          guild={activeGuild} 
-          user={user} 
-          onClose={() => setShowGuildSettings(false)} 
+        <GuildSettingsModal
+          guild={activeGuild}
+          user={user}
+          onClose={() => setShowGuildSettings(false)}
         />
       )}
-
+      {showUltraModal && <FrogcordUltraModal onClose={() => setShowUltraModal(false)} />}
       {/* ── Sunucu Listesi ── */}
-      <ServerSidebar 
-        guilds={guilds} 
-        activeGuild={activeGuild} 
-        onGuildSelect={selectGuild} 
+      <ServerSidebar
+        guilds={guilds}
+        activeGuild={activeGuild}
+        onGuildSelect={selectGuild}
         onShowModal={() => setShowModal(true)}
+        onShowUltra={() => setShowUltraModal(true)}
         onHomeClick={() => selectGuild(null)}
       />
 
       {/* ── Kanal Listesi / DM Listesi ── */}
       <div className="relative flex flex-col bg-[var(--bg-mid)] border-r border-[var(--border-pixel)] flex-shrink-0" style={{ width: `${channelsWidth}px` }}>
         <div className="absolute right-[-2px] top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-[#5865f2] z-50 transition" onMouseDown={startLeftResize} />
-        
+
         {activeGuild ? (
           <div className="flex-1 flex flex-col min-h-0">
-             <div className="h-14 border-b border-[var(--bg-dark)] flex items-center justify-between px-4 font-bold text-[var(--text-primary)] cursor-pointer hover:bg-[var(--bg-hover)] transition group flex-shrink-0" onClick={() => setShowGuildSettings(true)}>
-                <div className="flex items-center gap-2 min-w-0">
-                  <img src={resolveUrl(activeGuild.icon_url)} alt="" className="w-6 h-6 rounded-md object-cover flex-shrink-0" />
-                  <span className="truncate">{activeGuild.name}</span>
-                </div>
-                <span className="text-[var(--text-muted)] text-xs opacity-0 group-hover:opacity-100 transition"><Settings className="w-4 h-4" /></span>
-             </div>
-             <div className="flex-1 overflow-y-auto pt-4">
-                <ChannelList 
-                  channels={activeGuild.channels}
-                  activeChannel={activeChannel}
-                  onChannelSelect={selectChannel}
-                  guildId={activeGuild.id}
-                  user={user}
-                  voiceUsersGlobal={voiceUsersGlobal}
-                  globalOthersSpeak={globalOthersSpeak}
-                  activeGuild={activeGuild}
-                  voiceSpeaking={speaking}
-                />
-             </div>
+            <div className="h-14 border-b border-[var(--bg-dark)] flex items-center justify-between px-4 font-bold text-[var(--text-primary)] cursor-pointer hover:bg-[var(--bg-hover)] transition group flex-shrink-0" onClick={() => setShowGuildSettings(true)}>
+              <div className="flex items-center gap-2 min-w-0">
+                <img src={resolveUrl(activeGuild.icon_url)} alt="" className="w-6 h-6 rounded-md object-cover flex-shrink-0" />
+                <span className="truncate">{activeGuild.name}</span>
+              </div>
+              <span className="text-[var(--text-muted)] text-xs opacity-0 group-hover:opacity-100 transition"><Settings className="w-4 h-4" /></span>
+            </div>
+            <div className="flex-1 overflow-y-auto pt-4">
+              <ChannelList
+                channels={activeGuild.channels}
+                activeChannel={activeChannel}
+                onChannelSelect={selectChannel}
+                guildId={activeGuild.id}
+                user={user}
+                voiceUsersGlobal={voiceUsersGlobal}
+                globalOthersSpeak={globalOthersSpeak}
+                activeGuild={activeGuild}
+                voiceSpeaking={speaking}
+              />
+            </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
-             <div className="p-4 border-b border-[var(--border-pixel)] shadow-sm">
-                <div className="flex items-center gap-2 text-gray-200 font-bold px-1">
-                  <Users className="w-6 h-6 text-[var(--accent-primary)]" />
-                  <span className="text-lg">FrogCord</span>
-                </div>
-             </div>
-             <div className="flex-1 overflow-y-auto pt-4">
-               <DMList 
-                 friends={friends}
-                 activeChannel={activeChannel}
-                 onSelectDM={(uId) => console.log("DM Select:", uId)}
-               />
-             </div>
+            <div className="p-4 border-b border-[var(--border-pixel)] shadow-sm">
+              <div className="flex items-center gap-3 text-gray-200 font-bold px-1">
+                <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain filter drop-shadow-sm" />
+                <span className="text-xl tracking-tight">FrogCord</span>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto pt-4">
+              <DMList
+                friends={friends}
+                activeChannel={activeChannel}
+                onSelectDM={(uId) => console.log("DM Select:", uId)}
+              />
+            </div>
           </div>
         )}
 
         {/* User Controls Panel */}
         <div className="mt-auto bg-[var(--bg-light)] flex flex-col flex-shrink-0 z-10 border-t border-[var(--border-pixel)]">
           {currentVoiceChannel && (
-            <VoiceStatusBar 
-              channel={currentVoiceChannel} 
+            <VoiceStatusBar
+              channel={currentVoiceChannel}
               onLeave={leaveVoice}
               isMuted={isMuted}
               onToggleMute={toggleMute}
@@ -299,7 +301,7 @@ export default function MainApp() {
               onTitleClick={() => selectChannel(currentVoiceChannel)}
             />
           )}
-          
+
           <div className="flex items-center p-1.5">
             <button onClick={() => setShowProfileModal(true)} className="flex items-center gap-2 hover:bg-[var(--bg-hover)] rounded-md px-2 py-1 transition w-full min-w-0 group">
               <div className="relative flex-shrink-0">
@@ -348,10 +350,10 @@ export default function MainApp() {
                       const prev = messages[idx - 1];
                       const sameAuthor = prev && (prev.author?.id || prev.author_id) === (msg.author?.id || msg.author_id);
                       return (
-                        <MessageItem 
-                          key={msg.id || idx} 
-                          message={msg} 
-                          user={user} 
+                        <MessageItem
+                          key={msg.id || idx}
+                          message={msg}
+                          user={user}
                           isCompact={sameAuthor}
                           onUserClick={handleUserClick}
                         />
@@ -376,13 +378,13 @@ export default function MainApp() {
                       <Paperclip className="w-6 h-6" />
                     </button>
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={`#${activeChannel.name} kanalına mesaj gönder`}
                       className="bg-transparent border-none outline-none w-full text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm"
-                      value={inputValue} 
-                      onChange={handleInputChange} 
-                      onKeyDown={handleSendMessage} 
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      onKeyDown={handleSendMessage}
                     />
                   </div>
                 </div>
@@ -396,9 +398,9 @@ export default function MainApp() {
 
       {/* ── Sağ: Üye Paneli ── */}
       {activeGuild && (
-        <MembersPanel 
-          onlineUsers={onlineUsers} 
-          currentUser={user} 
+        <MembersPanel
+          onlineUsers={onlineUsers}
+          currentUser={user}
           onUserClick={handleUserClick}
           activeGuild={activeGuild}
         />
@@ -408,7 +410,7 @@ export default function MainApp() {
       {popoutUser && (
         <>
           <div className="fixed inset-0 z-[100]" onClick={() => setPopoutUser(null)} />
-          <div 
+          <div
             className="fixed z-[110] w-80 bg-[var(--bg-dark)] rounded-lg shadow-2xl overflow-hidden border border-[var(--border-pixel)]"
             style={{
               top: Math.min(popoutUser.rect.top, window.innerHeight - 350),
@@ -436,7 +438,7 @@ export default function MainApp() {
 
       {/* Audio Manager */}
       {currentVoiceChannel && Object.entries(remoteStreams).map(([sid, stream]) => (
-        <RemoteAudio key={sid} stream={stream} muted={isDeafened} />
+        <RemoteAudio key={sid} stream={stream} volume={soundVolume} muted={isDeafened} />
       ))}
     </div>
   );

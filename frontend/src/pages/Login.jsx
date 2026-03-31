@@ -40,9 +40,9 @@ export default function Login() {
         
         <div className="p-10 pt-8 flex flex-col items-center">
           {/* Logo */}
-          <div className="w-16 h-16 mb-6 relative group">
-            <div className="absolute inset-[-6px] bg-[var(--accent-primary)] opacity-0 blur-2xl group-hover:opacity-20 transition-opacity duration-700"></div>
-            <div className="relative w-full h-full bg-[var(--bg-dark)] border border-[var(--border-pixel)] rounded-xl shadow-lg p-3 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:scale-105 group-hover:border-[var(--accent-primary)]/40 group-hover:shadow-[var(--shadow-glow)]">
+          <div className="w-24 h-24 mb-6 relative group">
+            <div className="absolute inset-[-8px] bg-[var(--accent-primary)] opacity-0 blur-2xl group-hover:opacity-25 transition-opacity duration-700"></div>
+            <div className="relative w-full h-full bg-[var(--bg-dark)] border border-[var(--border-pixel)] rounded-2xl shadow-lg p-4 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:scale-105 group-hover:border-[var(--accent-primary)]/40 group-hover:shadow-[var(--shadow-glow)]">
                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain filter drop-shadow-md logo-img" />
             </div>
           </div>

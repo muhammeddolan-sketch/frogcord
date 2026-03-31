@@ -41,8 +41,7 @@ export function VoiceUserCard({ user, isLocal, stream, isSpeaking, isScreen, isM
   
   return (
     <div className={`voice-card ${isSpeaking ? 'animate-speak' : 'border-white/5 bg-[var(--bg-mid)]/40 hover:bg-[var(--bg-mid)]/80'}`}>
-       {/* Remote Audio Playback */}
-       {!isLocal && stream && <RemoteAudio stream={stream} volume={soundVolume} muted={localDeafened} />}
+       {/* Remote Audio is now managed globally in MainApp.jsx to prevent echo */}
 
        {hasVideo ? (
          <div className="w-full h-full relative group">

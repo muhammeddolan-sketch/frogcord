@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import { socket } from '../socket';
 import useAuthStore from '../store/authStore';
+import useGuildStore from '../store/guildStore';
 
 const VoiceContext = createContext(null);
 
@@ -61,6 +62,7 @@ const playSynthNote = (type, volume = 1.0) => {
 
 export const VoiceProvider = ({ children }) => {
   const { user } = useAuthStore();
+  const { activeGuild } = useGuildStore();
   const [soundVolume, setSoundVolume] = useState(() => parseFloat(localStorage.getItem('soundVolume') || '1.0'));
   
   const [currentVoiceChannel, setCurrentVoiceChannel] = useState(null);
@@ -97,6 +99,11 @@ export const VoiceProvider = ({ children }) => {
   const speakingRef = useRef(false);
   const speakingTimeoutRef = useRef(null);
   const channelRef = useRef(null);
+  const lastActivityRef = useRef(Date.now());
+
+  // AFK Detection
+  useEffect(() => { if (speaking) lastActivityRef.current = Date.now(); }, [speaking]);
+  useEffect(() => { lastActivityRef.current = Date.now(); }, [isMuted, isDeafened, isVideoOn, isScreenOn]);
 
   const createPeerConnection = useCallback((remoteSocketId) => {
     if (peerConnections.current[remoteSocketId]) return peerConnections.current[remoteSocketId];
@@ -385,6 +392,23 @@ export const VoiceProvider = ({ children }) => {
       leaveVoice();
     }
   }, [user, leaveVoice]);
+
+  useEffect(() => {
+    if (!currentVoiceChannel || !activeGuild || !activeGuild.afk_channel_id || activeGuild.afk_timeout <= 0) return;
+    if (Number(currentVoiceChannel.id) === Number(activeGuild.afk_channel_id)) return;
+
+    const timer = setInterval(() => {
+      const idleTime = (Date.now() - lastActivityRef.current) / 1000;
+      if (idleTime >= activeGuild.afk_timeout) {
+        const afkChannel = activeGuild.channels?.find(c => Number(c.id) === Number(activeGuild.afk_channel_id));
+        if (afkChannel) {
+          console.log(`[AFK] User moved due to ${idleTime}s inactivity.`);
+          joinVoice(afkChannel);
+        }
+      }
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [currentVoiceChannel, activeGuild, joinVoice]);
 
   // Global Socket Listeners for UI
   useEffect(() => {

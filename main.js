@@ -22,7 +22,12 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadURL('http://localhost:5173');
+  if (app.isPackaged) {
+    mainWindow.loadURL('https://samatha-unpotable-untouchably.ngrok-free.dev');
+  } else {
+    mainWindow.loadURL('http://localhost:9000');
+  }
+
   mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on('close', (event) => {
